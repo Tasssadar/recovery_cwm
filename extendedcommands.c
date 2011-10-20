@@ -41,6 +41,7 @@
 #include "edify/expr.h"
 #include <libgen.h>
 #include "mtdutils/mtdutils.h"
+#include "multirom.h"
 
 
 int signature_check_enabled = 1;
@@ -1171,4 +1172,118 @@ int has_datadata() {
 int volume_main(int argc, char **argv) {
     load_volume_table();
     return 0;
+}
+
+void
+show_multirom_menu()
+{
+    ui_print("Mounting SDEXT...\n");
+    ensure_path_mounted("/sd-ext");
+    DIR *multirom = opendir("/sd-ext/multirom");
+    if(!multirom)
+    {
+        ui_print("Could not find multirom folder!\n");
+        return;
+    }
+    closedir(multirom);
+    static char* headers[] = { "Choose item,",
+                   "or press BACK to return",
+                   "",
+                   NULL };
+
+// these constants correspond to elements of the items[] list.
+#define ITEM_MULTIROM_ACTIVATE_MOVE   0
+#define ITEM_MULTIROM_ACTIVATE_COPY   1
+#define ITEM_MULTIROM_CREATE          2
+
+#define ITEM_MULTIROM_DEACTIVATE_MOVE 0
+#define ITEM_MULTIROM_BACKUP          1
+#define ITEM_MULTIROM_ERASE           2
+#define ITEM_MULTIROM_COPY_MODULES    3
+
+
+    static char* items_disabled[] = { "Activate (move from backup)",
+                                      "Activate (copy from backup)",
+                                      "Create from current ROM",
+                                      NULL };
+    static char* items_enabled[] = { "Deactivate (move to backup)",
+                                     "Backup",
+                                     "Erase current ROM",
+                                     "Copy modules from int mem",
+                                      NULL };
+    unsigned char active = 0;
+    for (;;)
+    {
+
+        DIR *rom_dir = opendir("/sd-ext/multirom/rom");
+        if(rom_dir)
+        {
+            active = 1;
+            closedir(rom_dir);
+        }
+        else
+            active = 0;
+
+        int chosen_item = get_menu_selection(headers, active ? items_enabled : items_disabled, 0, 0);
+        if(active == 0)
+        {
+            switch (chosen_item)
+            {
+                case ITEM_MULTIROM_ACTIVATE_MOVE:
+                case ITEM_MULTIROM_ACTIVATE_COPY:
+                {
+                    char *path = multirom_list_backups();
+                    if(path)
+                    {
+                        multirom_activate_backup(path, ((chosen_item == ITEM_MULTIROM_ACTIVATE_MOVE) ? 0 : 1));
+                        free(path);
+                    }
+                    break;
+                }
+                case ITEM_MULTIROM_CREATE:
+                {
+                    ui_print("Mounting DATA, SYSTEM & CACHE...\n");
+                    ensure_path_mounted("/cache");
+                    ensure_path_mounted("/data");
+                    ensure_path_mounted("/system");
+                    __system("mkdir /sd-ext/multirom/rom");
+                    if(multirom_exract_ramdisk() != 0 || multirom_copy_folder("cache") != 0 ||
+                       multirom_copy_folder("data") != 0 || multirom_copy_folder("system") != 0)
+                    {
+                        __system("rm -r /sd-ext/multirom/rom && sync");
+                    }
+                    break;
+                }
+                default: return;
+            }
+        }
+        else
+        {
+            switch (chosen_item)
+            {
+                case ITEM_MULTIROM_DEACTIVATE_MOVE: multirom_deactivate_backup(0); break;
+                case ITEM_MULTIROM_BACKUP:          multirom_deactivate_backup(1); break;
+                case ITEM_MULTIROM_ERASE:
+                {
+                    ui_print("Erase Current ROM?\nMenu to confirm, any other\nkey to go back\n");
+                    int key = ui_wait_key();
+                    if(key != KEY_MENU)
+                        break;
+                    ui_print("Erasing...\n");
+                    __system("rm -r /sd-ext/multirom/rom && sync");
+                    ui_print("Done\n");
+                    break;
+                }
+                case ITEM_MULTIROM_COPY_MODULES:
+                {
+                    ui_print("Mounting SYSTEM...\n");
+                    ensure_path_mounted("/system");
+                    ui_print("Copying modules...\n");
+                    __system("cp /system/lib/modules/* /sd-ext/multirom/rom/system/lib/modules/ && sync");
+                    break;
+                }
+                default: return;
+            }
+        }
+    }
 }

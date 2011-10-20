@@ -21,6 +21,7 @@ LOCAL_SRC_FILES := \
     ../../system/core/toolbox/reboot.c \
     firmware.c \
     edifyscripting.c \
+    multirom.c \
     setprop.c
 
 ADDITIONAL_RECOVERY_FILES := $(shell echo $$ADDITIONAL_RECOVERY_FILES)
