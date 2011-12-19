@@ -199,6 +199,8 @@ char multirom_exract_ramdisk()
     __system("mkdir /sd-ext/multirom/rom/boot");
     __system("cp /tmp/boot/*.rc /sd-ext/multirom/rom/boot/");
     __system("cp /tmp/boot/default.prop /sd-ext/multirom/rom/boot/default.prop");
+    __system("cp /tmp/boot/sbin/adbd /sd-ext/multirom/rom/boot/");
+
     FILE *init_f = fopen("/tmp/boot/main_init", "r");
     if(init_f)
     {
