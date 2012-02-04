@@ -210,4 +210,6 @@ bool mzExtractRecursive(const ZipArchive *pArchive,
         int flags, const struct utimbuf *timestamp,
         void (*callback)(const char *fn, void*), void *cookie);
 
+int read_data(ZipArchive *zip, const ZipEntry *entry, char** ppData, int* pLength);
+
 #endif /*_MINZIP_ZIP*/

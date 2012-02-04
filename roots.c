@@ -98,22 +98,31 @@ void load_volume_table() {
                 alloc *= 2;
                 device_volumes = realloc(device_volumes, alloc*sizeof(Volume));
             }
-            device_volumes[num_volumes].mount_point = strdup(mount_point);
-            device_volumes[num_volumes].fs_type = !is_null(fs_type2) ? strdup(fs_type2) : strdup(fs_type);
-            device_volumes[num_volumes].device = strdup(device);
-            device_volumes[num_volumes].device2 =
+
+            Volume *vol;
+            if(volume_for_path(strdup(mount_point)))
+                vol = volume_for_path(mount_point);
+            else
+            {
+                vol = device_volumes+num_volumes;
+                ++num_volumes;
+            }
+
+            vol->mount_point = strdup(mount_point);
+            vol->fs_type = !is_null(fs_type2) ? strdup(fs_type2) : strdup(fs_type);
+            vol->device = strdup(device);
+            vol->device2 =
                 !is_null(device2) ? strdup(device2) : NULL;
-            device_volumes[num_volumes].fs_type2 = !is_null(fs_type2) ? strdup(fs_type) : NULL;
+            vol->fs_type2 = !is_null(fs_type2) ? strdup(fs_type) : NULL;
 
             if (!is_null(fs_type2)) {
-                device_volumes[num_volumes].fs_options2 = dupe_string(fs_options);
-                device_volumes[num_volumes].fs_options = dupe_string(fs_options2);
+                vol->fs_options2 = dupe_string(fs_options);
+                vol->fs_options = dupe_string(fs_options2);
             }
             else {
-                device_volumes[num_volumes].fs_options2 = NULL;
-                device_volumes[num_volumes].fs_options = dupe_string(fs_options);
+                vol->fs_options2 = NULL;
+                vol->fs_options = dupe_string(fs_options);
             }
-            ++num_volumes;
         } else {
             LOGE("skipping malformed recovery.fstab line: %s\n", original);
         }
@@ -245,7 +254,7 @@ int ensure_path_mounted_at_mount_point(const char* path, const char* mount_point
     } else {
         // let's try mounting with the mount binary and hope for the best.
         char mount_cmd[PATH_MAX];
-        sprintf(mount_cmd, "mount %s", path);
+        sprintf(mount_cmd, "mount -t %s -o %s %s %s", v->fs_type, v->fs_options, v->device, v->mount_point);
         return __system(mount_cmd);
     }
 
