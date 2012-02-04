@@ -271,11 +271,17 @@ void multirom_change_mountpoints(char apply)
     if(apply)
     {
         __system("cp /etc/recovery.fstab /etc/recovery.fstab.back");
+        __system("cp /etc/fstab /etc/fstab.back");
         __system("echo \"/data\tauto\t/sd-ext/multirom/rom/data\t/inv\tauto\tbind\tbind\" >> /etc/recovery.fstab");
         __system("echo \"/system\tauto\t/sd-ext/multirom/rom/system\t/inv\tauto\tbind\tbind\" >> /etc/recovery.fstab");
+        __system("echo \"/sd-ext/multirom/rom/system /system auto bind\" >> /etc/fstab");
+        __system("echo \"/sd-ext/multirom/rom/data /data auto bind\" >> /etc/fstab");
     }
     else
+    {
         __system("cp /etc/recovery.fstab.back /etc/recovery.fstab");
+        __system("cp /etc/fstab.back /etc/fstab");
+    }
 
 
     free(get_device_volumes());
