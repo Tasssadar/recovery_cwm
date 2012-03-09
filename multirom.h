@@ -11,7 +11,7 @@ char multirom_copy_folder(char *folder);
 void multirom_change_mountpoints(char apply);
 char multirom_backup_boot_image(char restore);
 int multirom_prepare_zip_file(char *file);
-void multirom_create_from_zip(char *file);
+void multirom_flash_zip(char *file, char newRom);
 
 // From mkbootimg/bootimg.h
 typedef struct boot_img_hdr boot_img_hdr;

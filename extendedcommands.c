@@ -1253,6 +1253,7 @@ show_multirom_menu()
 #define ITEM_MULTIROM_BACKUP          1
 #define ITEM_MULTIROM_ERASE           2
 #define ITEM_MULTIROM_COPY_MODULES    3
+#define ITEM_MULTIROM_FLASH_ZIP       4
 
 
     static char* items_disabled[] = { "Activate (move from backup)",
@@ -1264,6 +1265,7 @@ show_multirom_menu()
                                      "Backup",
                                      "Erase current ROM",
                                      "Copy modules from int mem",
+                                     "Flash ZIP -DONT USE FOR ROMs",
                                       NULL };
     unsigned char active = 0;
     for (;;)
@@ -1310,7 +1312,7 @@ show_multirom_menu()
                 }
                 case ITEM_MULTIROM_CREATE_ZIP:
                 {
-                     static char* headers[] = {  "Choose a zip to apply",
+                    static char* headers[] = {  "Choose a zip to apply",
                                 "",
                                 NULL
                     };
@@ -1319,7 +1321,7 @@ show_multirom_menu()
                     char* file = choose_file_menu("/sdcard/", ".zip", headers);
                     if (file == NULL)
                         break;
-                    multirom_create_from_zip(file);
+                    multirom_flash_zip(file, 1);
                     break;
                 }
                 default: return;
@@ -1348,6 +1350,24 @@ show_multirom_menu()
                     ensure_path_mounted("/system");
                     ui_print("Copying modules...\n");
                     __system("cp /system/lib/modules/* /sd-ext/multirom/rom/system/lib/modules/ && sync");
+                    break;
+                }
+                case ITEM_MULTIROM_FLASH_ZIP:
+                {
+                    static char* headers[] = {  "Choose a zip to apply",
+                                "",
+                                NULL
+                    };
+
+                    ensure_path_mounted("/sdcard");
+                    char* file = choose_file_menu("/sdcard/", ".zip", headers);
+                    if (file == NULL)
+                        break;
+
+                    multirom_flash_zip(file, 0);
+
+                    ui_print("Running sync()...");
+                    sync();
                     break;
                 }
                 default: return;
