@@ -1227,7 +1227,7 @@ int volume_main(int argc, char **argv) {
 }
 
 void
-show_multirom_menu()
+show_multirom_menu(void)
 {
     ui_print("Mounting SDEXT...\n");
     ensure_path_mounted("/sd-ext");

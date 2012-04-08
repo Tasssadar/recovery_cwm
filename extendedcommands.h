@@ -41,7 +41,7 @@ void
 show_advanced_menu();
 
 void
-show_multirom_menu();
+show_multirom_menu(void);
 
 int format_unknown_device(const char *device, const char* path, const char *fs_type);
 

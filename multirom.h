@@ -5,8 +5,8 @@
 
 void multirom_deactivate_backup(unsigned char copy);
 void multirom_activate_backup(char *path, unsigned char copy);
-char *multirom_list_backups();
-char multirom_exract_ramdisk();
+char *multirom_list_backups(void);
+char multirom_exract_ramdisk(void);
 char multirom_copy_folder(char *folder);
 void multirom_change_mountpoints(char apply);
 char multirom_backup_boot_image(char restore);

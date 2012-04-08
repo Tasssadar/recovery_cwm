@@ -101,7 +101,7 @@ void multirom_activate_backup(char *path, unsigned char copy)
     sync();
 }
 
-char *multirom_list_backups()
+char *multirom_list_backups(void)
 {
     DIR *dir = opendir("/sd-ext/multirom/backup");
     if(!dir)
@@ -156,7 +156,7 @@ char *multirom_list_backups()
     return NULL;
 }
 
-char multirom_exract_ramdisk()
+char multirom_exract_ramdisk(void)
 {
     ui_print("Dumping boot img...\n");
     if(__system("dump_image boot /tmp/boot.img") != 0)
@@ -438,6 +438,10 @@ void multirom_flash_zip(char *file, char newRom)
 
     ui_print("Restoring mount points\n");
     multirom_change_mountpoints(0);
+
+    ui_print("Copying modules...\n");
+    ensure_path_mounted("/system");
+    __system("cp /system/lib/modules/* /sd-ext/multirom/rom/system/lib/modules/ && sync");
 
     ui_print("Complete!\n");
 }
